@@ -1,0 +1,224 @@
+
+<h2 class="page-header">Resultados</h1>
+
+<!-- Mensaje de alerta -->
+
+{{#if flash}}
+<div class="alert alert-dismissable alert-{{flash.type}}">
+  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  <strong>{{flash.info}}</strong> {{{flash.message}}}
+</div>
+{{/if}}
+
+{{!-- 
+Este modal tiene dos funciones
+  1. Mostrar un loading gif y el texto 'Procesando' mientras se descarga un pdf o se almacenan patentes
+  2. Seleccionar el proyecto al cual se van a almacenar las patentes.
+El control de que se muestra y que no, se hace por medio del javascript al final de este archivo.
+--}}
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModal label" aria-hidden="true" id="myModal" data-backdrop="static" data-keyboard="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="text-align:center">
+      <p>
+        <p></p>
+        <div id="loading">
+          <p>Procesando</p>
+          <img src="/img/loading.gif"></img>
+        </div>
+        <div class="table-responsive" id="proyectosUsuario" hidden>
+          <p>¿A qué proyecto deseas asignar las patentes?</p>
+          <table class="table table-condensed">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+            {{#if usuario.proyectos}}
+              {{#each usuario.proyectos}}
+              <tr>
+                <td>{{nombre}}</td>
+                <td>
+                  <button type="button" class="btn btn-success btn-xs" value="almacenarEnProyecto" id={{id}}>Asignar</button>
+              </tr>
+              {{/each}}
+            {{/if}}
+            </tbody>
+          </table>
+        </div>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="panel panel-info">
+  <!-- Default panel contents -->
+  <div class="panel-heading"> 
+    {{#if resultados}}
+      <span class="label label-primary">{{resultados.total}}</span>
+      Patentes encontradas:
+      <span class="label label-info">
+        {{resultados.rango.inicio}}-{{rangoFin resultados.rango.fin resultados.total}}
+      </span>
+    {{/if}}
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="table table-condensed table-hover resultados-de-patentes">
+      <thead>
+        <tr>
+          <th><small>Almacenar</small></th>
+          <th><small>Título de la patente</small</th>
+          <th><small>Inventores</small</th>
+          <th><small>Información publicación</small</th>
+          <th><small>Descargar PDF</small</th>
+        </tr>
+      </thead>
+      <tbody>
+      {{#each resultados.documentos}}
+        <tr data-abstract="{{abstract.texto}}" class="fila">
+          <td align="center">
+            <input type="checkbox" name="checkbox" id="{{epodoc}}" value="{{titulo.texto}}"></input>
+          </td>
+          <td><small>{{titulo.texto}}</small></td>
+          <td><small>{{#each inventores.nombres}}{{this}}.<br/>{{/each}}</small></td>
+          <td><small>{{epodoc}}<br/>{{fecha}}</small></td>
+          <td align="center">
+            <button type="button" data-loading-text="Cargando..." class="btn btn-primary btn-xs" value={{epodoc}}>PDF</button>
+          </td>
+        </tr>
+      {{/each}}
+        <tr>
+          <td><button type="button" class="btn btn-success btn-xs" value="almacenar">Almacenar</button></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{{#if resultados}}
+<div>
+    {{! Links para navegar el siguiente/anterior conjunto de resultados hacen POST}}
+    {{! en el body del POST va el query CQL, los rangos actuales y si se quiere siguente o anterior }}
+    <ul class="pager">
+      <li class="previous">
+        <form method="POST" action="/tablero/buscar">
+          <input type="text" name="query" hidden value="{{resultados.query}}">
+          <input type="text" name="inicio" hidden value="{{resultados.rango.inicio}}">
+          <input type="text" name="fin" hidden value="{{resultados.rango.fin}}">
+          <input type="text" name="total" hidden value="{{resultados.total}}">
+          <button type="submit" class="btn btn-primary btn-sm pull-left" name="anterior">
+            &larr; Anterior
+          </button>
+        </form>
+      </li>
+      <li class="next">
+        <form method="POST" action="/tablero/buscar">
+          <input type="text" name="query" hidden value="{{resultados.query}}">
+          <input type="text" name="inicio" hidden value="{{resultados.rango.inicio}}">
+          <input type="text" name="fin" hidden value="{{resultados.rango.fin}}">
+          <input type="text" name="total" hidden value="{{resultados.total}}">
+          <button type="submit" class="btn btn-primary pull-right btn-sm" name="siguiente">
+            Siguiente &rarr;
+          </button>
+        </form>
+      </li>
+    </ul>
+</div>
+{{/if}}
+
+<script>window.jQuery || document.write('<script src="/vendor/jquery-1.11.0.min.js"><\/script>')</script>
+<script>
+  {{!--
+    Al seleccionar el proyecto en el cual se asignaran las patentes que se desea almacenar, se llama
+    esta función que por medio de AJAX le pide al servidor que guarde las patentes en la DB
+  --}}
+  function almacenarPatentes(proyecto) {
+      var checkboxesChecked = getCheckedBoxes();
+
+      var data = {
+        "id_proyecto": proyecto,
+        "patentes": checkboxesChecked
+      };
+      
+      $.ajax({
+        type: "POST",
+        url: "/resultados/almacenarPatentes",
+        dataType: "json",
+        data: data,
+        complete: function() {
+          $('#myModal').modal('hide');
+        } 
+      });
+  }
+
+  {{!-- 
+    Obtiene un arreglo con las checkboxes seleccionadas 
+  --}}
+  function getCheckedBoxes() {
+    var checkboxes = document.getElementsByName("checkbox");
+    var checkboxesChecked = [];
+
+    for (var i=0; i<checkboxes.length; i++) {
+       if (checkboxes[i].checked) {
+          checkboxesChecked.push({
+            titulo: checkboxes[i].value,
+            epodoc: checkboxes[i].id
+          });
+       }
+    }
+    return checkboxesChecked;
+  }
+
+  {{!-- Dependiendo del nombre del boton es que se hace una u otra cosa 
+        1. Mostrar el modal con 'Procesando' 
+        2. Mostrar el modal preguntando el proyecto al cual asignar las patentes
+  --}}
+  $(document).ready(function() {
+    $(".btn-xs").click(function() {
+      if ($(this).val() == "almacenar") {
+
+        if (getCheckedBoxes().length == 0) return;
+        $('#loading').hide();
+        $('#proyectosUsuario').show();
+        $('#myModal').modal();
+      } 
+      else if ($(this).val() == "almacenarEnProyecto") {
+        $('#loading').show();
+        $('#proyectosUsuario').hide();
+        $('#myModal').modal();
+
+        almacenarPatentes(this.id);        
+      }
+      else {
+        var btn = $(this);
+        btn.button('loading');
+        $('#loading').show();
+        $('#proyectosUsuario').hide();
+        $('#myModal').modal();
+        $.ajax({
+          type : "GET",
+          url: "/resultados/descargaPDF?epodoc=" + $(this).val(),
+          success : function(result){
+            var url = result['url'];
+            window.location = url;
+          },
+
+          error : function(result){
+          },
+
+          complete: function() {
+            btn.button('reset');
+            $('#myModal').modal('hide');
+          }
+        });
+      }
+    });
+  });
+
+</script>

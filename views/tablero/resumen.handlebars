@@ -1,0 +1,134 @@
+
+{{!-- Modal de bootstrap usado para preguntar si realmente desea borrar el proyecto 
+      el id a borrar se define con base en el botón que el usuario presionó en la lista de proyectos.
+      idBorrar y nombreBorrar son definidos utilizando jQuery al final de este archivo. Cuando el usuario
+      presona "Borrar" al lado de un proyecto es cuando se presenta este modal.
+      Al presionar de nuevo Borrar, en esta ventana, se procesa la forma /tablero/borrarProyecto --}}
+<div class="modal fade" id="myModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">Borrar proyecto</h4>
+      </div>
+      <div class="modal-body">
+        <p>¿Realmente deseas borrar el proyecto?</p>
+        <p><span id="nombreBorrar"></span></p>
+      </div>
+      <div class="modal-footer">
+        <form method="POST" action="/tablero/borrarProyecto">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger" id="idBorrar" name="idBorrar" value="0">Borrar</button>
+        </form>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<h2 class="page-header">Resumen</h1>
+
+<h3 class="sub-header">Datos de la cuenta</h2>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Rol</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{usuario.nombre}}</td>
+        <td>{{usuario.email}}</td>
+        <td>{{usuario.rol}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h3 class="sub-header">Proyectos asignados</h2>
+<div class="table-responsive">
+  <table class="table table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Fecha de creación</th>
+        <th>Patentes</th>
+      </tr>
+    </thead>
+    <tbody>
+    {{#if usuario.proyectos}}
+      {{#each usuario.proyectos}}
+      {{!-- Cada fila contiene un boton 'Borrar' con el id del proyecto. El campo de nombre tambien tiene un
+            id y es utilizado para que el modal sepa que nombre mostrar en la ventana de confimacion --}}
+      <tr>
+        <td id="nombre{{id}}">{{nombre}}</td>
+        <td>{{descripcion}}</td>
+        <td>{{fechaCreacion}}</td>
+        <td>{{noPatentes}}</td>
+        <td>
+          <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#myModal" value={{id}}>Borrar</button>
+      </tr>
+      {{/each}}
+    {{/if}}
+    </tbody>
+  </table>
+
+  {{#if flash}}
+  <div class="container">
+    <div class="alert alert-dismissable alert-{{flash.type}}">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <strong>{{flash.info}}</strong> {{{flash.message}}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{!-- El usuario siempre puede crear un proyecto nuevo, al hacer click en el boton debe aparecer
+  una forma que permita registrar nuevos proyectos. --}}
+  <p><a id="crearProyecto" class="btn btn-primary btn-sm" role="button">Crear un nuevo proyecto &raquo;</a></p>
+
+  <form id="formaProyecto" class="form-horizontal" role="form" hidden method="POST" action="/tablero/crearProyecto">
+    <div class="form-group">
+      <label for="nombreProyecto" class="col-sm-2 control-label">Nombre del proyecto</label>
+      <div class="col-sm-10">
+        <input type="input" class="form-control" id="nombreProyecto" name="nombreProyecto" placeholder="Nombre" maxlength="150" autofocus>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="descripcionProyecto" class="col-sm-2 control-label">Descripción del proyecto</label>
+      <div class="col-sm-10">
+        <textarea class="form-control" rows="3" id="descripcionProyecto" name="descripcionProyecto" placeholder="Descripción" maxlength="250"></textarea>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button type="submit" class="btn btn-info">Crear proyecto</button>
+        <button type="reset" class="btn btn-default">Limpiar</button>
+      </div>
+    </div>
+  </form>
+
+</div>
+
+<script>window.jQuery || document.write('<script src="/vendor/jquery-1.11.0.min.js"><\/script>')</script>
+
+{{!-- Funciones que se encargan de procesar los clicks en diferentes botones en la página--}}
+<script>
+  // {{!-- muestra la forma para crear un nuevo proyecto --}}
+  $(document).ready(function() {
+      $("#crearProyecto").click(function() {        
+           $("#formaProyecto").toggle('show');
+      });
+  });
+
+  // {{!-- establece los valores adecuados de id y nombre del proyecto a borrar--}}
+  $(document).ready(function(){
+    $(".btn-xs").click(function(){
+        $("#idBorrar").attr("value",($(this).val()));
+        $("#nombreBorrar").html($("#nombre" + $(this).val()).text())
+    });
+  });
+</script>
+</script>

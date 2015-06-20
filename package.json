@@ -1,0 +1,37 @@
+{
+  "name": "ITESO_EPO",
+  "version": "0.0.1",
+  "description": "Extrae informacion de patentes desde la EPO OPS y genera un cubo OLAP",
+  "main": "itesoepo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ITESO",
+    "EPO",
+    "OPS",
+    "patentes"
+  ],
+  "author": "Luis Ernesto Echeverria Arevalo",
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^0.11.0",
+    "body-parser": "^1.2.0",
+    "cookie-parser": "^1.1.0",
+    "express": "^4.3.1",
+    "express-session": "^1.2.0",
+    "express3-handlebars": "^0.5.0",
+    "mkdirp": "^0.5.0",
+    "mysql": "^2.3.2",
+    "nodecr": "0.0.5",
+    "nodemailer": "^0.6.5",
+    "python-shell": "0.0.3",
+    "serve-favicon": "^2.0.0",
+    "validator": "^3.12.0",
+    "xml2json": "^0.4.0"
+  },
+  "devDependencies": {
+    "mocha": "^1.19.0",
+    "chai": "^1.9.1"
+  }
+}

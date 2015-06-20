@@ -1,0 +1,30 @@
+<body>
+<!-- Wrapper/Container Table: Use a wrapper table to control the width
+and the background color consistently of your email. Use this approach
+instead of setting attributes on the body tag. -->
+<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable">
+    <tr>
+        <td valign="top">
+        <!-- Tables are the most common way to format your email consistently.
+        Set your table widths inside cells and in most cases reset cellpadding,
+        cellspacing, and border to zero. Use nested tables as a way to space
+        effectively in your message. -->
+        <table cellpadding="0" cellspacing="0" border="0" align="center">
+            <tr>
+                <td width="300" valign="top"><h1>ITESO Análisis de Patentes</h1></td>
+                <td width="200" valign="top">
+                        <img src="http://placehold.it/100x100" alt="ITESO">
+                </td>
+            </tr>
+            <tr>
+                <td width="600" valign="top">
+                    <p>{{usuario.nombre}} {{usuario.apellido}}.</p>
+                    <p>Gracias por registrarte en el sistema de análisis de patentes del ITESO.</p>
+                </td>
+            </tr>
+        </table>
+        </td>
+    </tr>
+</table>
+<!-- End of wrapper table -->
+</body>

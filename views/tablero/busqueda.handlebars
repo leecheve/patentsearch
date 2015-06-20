@@ -1,0 +1,106 @@
+
+<h2 class="page-header">Búsqueda de patentes</h1>
+<h3 class="sub-header">Búsqueda avanzada</h2>
+
+<!-- Mensaje de alerta -->
+
+{{#if flash}}
+<div class="alert alert-dismissable alert-{{flash.type}}">
+	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+	<strong>{{flash.info}}</strong> {{{flash.message}}}
+</div>
+{{/if}}
+
+<!-- Inicia la forma -->
+<form role="form" method="POST" action="/tablero/buscar">
+
+	<!-- Panel encerrando los campos para titulo y/o abstract -->
+	<div class="panel panel-info">
+	  <div class="panel-heading">
+	    <h3 class="panel-title">Escriba palabras clave separadas por un conector (AND, OR, NOT)</h3>
+	  </div>
+	  <div class="panel-body">
+		  <div class="form-group">
+		    <label for="ti">Título</label>
+	      	<input type="text" class="form-control" name="ti" placeholder="plastic AND bicycle NOT electric" autofocus>
+		  </div>
+		  <div class="form-group">
+		    <label for="ta">Título o abstract</label>
+		    <input type="text" class="form-control" name="ta" placeholder="hair">
+		  </div>
+	  </div>
+	</div>
+
+	<!-- Panel para los campos de publicación, aplicación, prioridad -->
+	<div class="panel panel-info">
+	  <div class="panel-heading">
+	    <h3 class="panel-title">Escriba números con o sin código de pais</h3>
+	  </div>
+	  <div class="panel-body">
+		  <div class="form-group">
+		    <label for="pn">Número de publicación</label>
+	      	<input type="text" class="form-control" name="pn" placeholder="WO2008014520">
+		  </div>
+		  <div class="form-group">
+		    <label for="ap">Número de aplicación</label>
+		    <input type="text" class="form-control" name="ap" placeholder="DE19971031696">
+		  </div>
+		  <div class="form-group">
+		    <label for="pr">Número de prioridad</label>
+		    <input type="text" class="form-control" name="pr" placeholder="WO1995US15925">
+		  </div>
+	  </div>
+	</div>
+
+	<!-- Panel para el campo de fecha -->
+	<div class="panel panel-info">
+	  <div class="panel-heading">
+	    <h3 class="panel-title">Escriba una fecha (yyyyMMdd, yyyyMM, yyyy) o un rango de dos fechas separadas por coma</h3>
+	  </div>
+	  <div class="panel-body">
+		  <div class="form-group">
+		    <label for="pd">Fecha de publicación</label>
+		    <input type="text" class="form-control" name="pd" placeholder="1999,2005">
+		  </div>
+	  </div>
+	</div>
+
+	<!-- Panel para el campo de personas/organizaciones -->
+	<div class="panel panel-info">
+	  <div class="panel-heading">
+	    <h3 class="panel-title">Escriba el nombre de una o más personas/organizaciones</h3>
+	  </div>
+	  <div class="panel-body">
+		  <div class="form-group">
+		    <label for="pa">Aplicante(s)</label>
+		    <input type="text" class="form-control" name="pa" placeholder="Institut Pasteur">
+		  </div>
+		  <div class="form-group">
+		    <label for="in">Inventor(es)</label>
+		    <input type="text" class="form-control" name="in" placeholder="Smith">
+		  </div>
+	  </div>	  
+	</div>
+
+	<!-- Panel para los campos de CPC e IPC -->
+	<div class="panel panel-info">
+	  <div class="panel-heading">
+	    <h3 class="panel-title">Escriba uno o más símbolos de clasificación</h3>
+	  </div>
+	  <div class="panel-body">
+		  <div class="form-group">
+		    <label for="cpc">CPC</label>
+		    <input type="text" class="form-control" name="cpc">
+		  </div>
+		  <div class="form-group">
+		    <label for="ipc">IPC</label>
+		    <input type="text" class="form-control" name="ipc" placeholder="H03M1/12">
+		  </div>
+	  </div>	  
+	</div>
+
+  <div class="form-group">
+    <button type="clear"  class="btn btn-default">Limpiar</button>
+    <button type="submit" class="btn btn-primary">Buscar</button>
+  </div>
+</form>

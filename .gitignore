@@ -13,3 +13,11 @@ results
 
 npm-debug.log
 node_modules
+
+credenciales.js
+package.json.bak
+public/*_wordcloud_*.png
+public/fonts/
+public/img/
+public/patentes/
+public/qa/

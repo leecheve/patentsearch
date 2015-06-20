@@ -1,0 +1,91 @@
+  {{#if flash}}
+  <div class="container">
+    <div class="alert alert-dismissable alert-{{flash.type}}">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <strong>{{flash.info}}</strong> {{{flash.message}}}
+    </div>
+  </div>
+  {{/if}}
+
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModal label" aria-hidden="true" id="myModal" data-backdrop="static" data-keyboard="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="text-align:center">
+      <p>
+        <p></p>
+        <div id="loading">
+          <p>Procesando</p>
+          <img src="/img/loading.gif"></img>
+        </div>
+      </p>
+    </div>
+  </div>
+</div>
+
+
+  {{#if usuario.proyectos}}
+    {{#each usuario.proyectos}}
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{nombre}}</h3><small>({{fechaCreacion}})</small>
+      </div>
+      <div class="panel-body">
+        <P>{{descripcion}}</P>
+        <div class="table-responsive">
+          <table class="table table-striped table-condensed">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Epodoc</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each patentes}}
+              <tr>
+                <td>{{titulo}}</td>
+                <td>{{epodoc}}</td>
+                <td>
+                  <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#myModal" value="borrar" id={{../id}}:{{epodoc}}>Borrar</button>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+          <button type="button" class="btn btn-success" value="analizar" id={{id}}>Analizar Patentes del Proyecto </button>
+        </div>
+      </div>
+    </div>
+    {{/each}}
+  {{/if}}
+
+<script>window.jQuery || document.write('<script src="/vendor/jquery-1.11.0.min.js"><\/script>')</script>
+<script>
+  $(document).ready(function() {
+    $(".btn").click(function() {
+      if ($(this).val() == "borrar") {
+        {{!-- El id de cualquier boton 'borrar' contiene '<epodoc de la patente>:<id del proyecto>' --}}
+        var arrayValues = this.id.split(":");
+
+        window.alert("Borrar patente " + arrayValues[1] + " del proyecto: " + arrayValues[0]);
+      }
+      else if ($(this).val() == "analizar") {
+        $('#myModal').modal();
+        var proyecto = this.id;
+
+        $.ajax({
+          type : "GET",
+          url: "/analizar?proyecto=" + proyecto,
+          success : function(result){
+            var url = result['url'];
+            window.location = url;
+          },
+
+          error : function(result){
+          },
+
+          complete: function() {
+            $('#myModal').modal('hide');
+          }
+        });
+      }
+    });
+  });
+</script>
