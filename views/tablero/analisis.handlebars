@@ -75,6 +75,24 @@
           </div><!-- /.col-lg-12 -->
 
 
+        {{!-- crear entradas en el diccionario --}}
+        <div class="row">
+          <div class="col-lg-4">
+              <h3 class="featurette-heading">Agregar al diccionario del proyecto</h3>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-4">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="" id="customDict">
+              <span class="input-group-btn">
+                <button class="btn btn-primary btn-sm" type="button" value="addCustomDict">Añadir</button>
+              </span>
+            </div><!-- /input-group -->
+          </div><!-- /.col-lg-6 -->
+        </div><!-- /.row -->
+
 
         {{!-- Ngramas y stop words --}}
         <div class="row">
@@ -233,6 +251,25 @@
       });
   }
 
+  {{!-- Esta funcion añade los ngramas desde un textbox. Utiliza el mismo POST /addDict que los
+        ngramas que se añaden desde la lista de ngramas del proyecto --}}
+  function addCustomDict(proyecto) {
+      var data = {
+        "id_proyecto": proyecto,
+        "ngramas": [{ngrama: document.getElementById("customDict").value}]
+      };
+
+      $.ajax({
+        type: "POST",
+        url: "/addDict",
+        dataType: "json",
+        data: data,
+        complete: function() {
+          location.reload();
+        } 
+      });
+  }
+
   function addDict(proyecto) {
       var checkboxesChecked = getCheckedBoxes('checkbox-ngrama');
   
@@ -315,6 +352,11 @@
         if (getCheckedBoxes('checkbox-ngrama').length == 0) return;
 
         addDict({{analisis.id_proyecto}});
+      }
+      else if (nombre == "addCustomDict") {
+        if (document.getElementById('customDict').length == 0) return;
+
+        addCustomDict({{analisis.id_proyecto}});
       }
       else if (nombre == "delStopWord") {
         {{!-- 

@@ -854,7 +854,10 @@ exports.mostrarAnalisis = function (req, res, next) {
 			    				if (result.length == analisis.stopwords.length) {
 			    					// ya que se proceso todo (ngramas y stopwords), llamar al callback
 			    					console.log("Stopwords encontrados. Buscando diccionario");
-
+/*
+	TODO: Partir este proceso en dos. Obtener los ngramas y en otro query obtener el número de patentes y su cuenta.
+	esto va a permitir mostrar los ngramas añadidos que no están en ninguna patente
+*/
 			    					client.query(
 			'SELECT ngram, SUM(ngram_count) AS ngram_count, count(epodoc) as patentes ' +
 			'FROM ngrams WHERE (epodoc IN (SELECT epodoc FROM patentes_proyectos WHERE id_proyecto = ?)) ' +
