@@ -86,6 +86,8 @@ app.get('/tablero', rutas.validarSesion, rutas.tablero);
 // ruta que muestra el resultado del analisis de un proyecto
 app.get('/tablero/analisis', rutas.validarSesion, rutas.mostrarAnalisis);
 
+app.get('/tablero/diccionario', rutas.validarSesion, rutas.mostrarDiccionario);
+
 // permite atrapar cualquier recurso (seccion) debajo de tablero/. Eg. /tablero/busqueda
 app.get('/tablero/:seccion', rutas.validarSesion, rutas.tablero);
 

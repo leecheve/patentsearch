@@ -904,6 +904,204 @@ exports.mostrarAnalisis = function (req, res, next) {
 	}
 };
 
+
+
+//
+// Se llama cuando el analisis se completo y se quiere mostrar el resultado en pantalla
+//
+// TODO: Mover las funciones comunes entre mostrarDiccionario y mostrarAnalisis afuera de
+// los métodos para evitar código repetido..
+exports.mostrarDiccionario = function (req, res, next) {
+	var ruta    = 'tablero/diccionario';
+
+	var id_proyecto = req.query.proyecto;
+	var nombre_proyecto;
+
+	var analisis = {};
+
+	// Si a esta pagina se llega con un proyecto en el query (/analisis?proyecto=X)
+	// entonces se obtiene todo el analisis para dicho proyecto y se pone en 'analisis'
+	if (id_proyecto) {
+		client.query('SELECT nombre FROM proyectos WHERE id_proyecto=?', [id_proyecto],
+			function(err, result) {
+				nombre_proyecto = result[0].nombre;
+				analisis = {
+					id_proyecto: id_proyecto,
+					nombre_proyecto: nombre_proyecto,
+					ngramas: [],
+					stopwords: [],
+					diccionario: [],
+					matriz: [],
+					patentes: [],
+				};
+
+				// completa el json analisis que va a ser utilizado por el handlebars
+				getNgrams(id_proyecto, function() {
+					getMatrix(id_proyecto, function() {
+						console.log("Mostrando análisis.");
+						showAnalisis();	
+					});
+				});
+		});
+	}
+	else {
+		// Si no hubo proyecto en el query entoncs se renderea la pagina sin mostrar ningun analisis
+		showAnalisis();
+	}
+
+	/* El objetivo es construir una matriz que se pueda almacenar en la variable analisis.matriz,
+	ya que esta variable llega despues a analisis.handlebars y este la puede procesar
+
+	Se consigue obteniendo todos los ngramas del diccionario del proyecto, por cada ngrama
+	se consulta su existencia en cada una de las patentes del proyecto. Por eso hay 3 querys anidadas
+	*/
+	function getMatrix(id_proyecto, cb) {	
+		// obtener todos los ngramas del DICCIONARIO del proyecto
+		client.query('SELECT ngram FROM diccionario WHERE id_proyecto=?', [id_proyecto],
+			function(err, ngramas) {
+				if (ngramas.length == 0)
+					return cb();
+
+				// Obtener todas las patentes del proyecto
+				client.query('SELECT epodoc FROM patentes_proyectos WHERE id_proyecto=?',
+					[id_proyecto], function(err, patentes) {
+						var counter = 0;
+
+						// por cada ngrama se va a buscar en cada patente
+						ngramas.forEach(function(ngrama){
+							analisis.matriz = [];
+
+							//console.log(ngrama.ngram + " y " + patentes.length + " patentes");
+
+							var filas = {
+								ngrama: ngrama.ngram,
+								patentes: [],
+							};
+
+							var contadorPatentes = 0;
+							analisis.patentes = [];
+
+							// buscar en cada una de las patentes
+							patentes.forEach(function(patente) {
+
+								// primero construir la lista de patentes en la variable analisis
+								// esta va a servir para saber todos los epodocs de la matriz
+								// ya que la matriz solo guarda las intersecciones donde existe el ngrama
+								analisis.patentes.push({epodoc: patente.epodoc});
+
+								client.query('SELECT ngram FROM ngrams WHERE ' +
+									'ngram=? AND epodoc=?', [ngrama.ngram, patente.epodoc], 
+									function(err, res) {
+										if (err) console.log(err);
+
+										// la existencia de dicho ngrama en dicha patente
+										if (res.length) {
+											filas.patentes.push("1");
+										}
+										else{
+											filas.patentes.push(" ");
+										}
+
+										// es neceario saber cuando se consultados todas las patentes
+										// para un ngrama, es entonces cuando se anade la fila a la matriz
+										contadorPatentes++;
+										if (contadorPatentes == patentes.length) {
+											analisis.matriz.push(filas);
+										}
+
+										counter++;
+
+										// el total de iteraciones es patentes * ngramas
+										if (counter == (ngramas.length * patentes.length)) {
+											return cb();
+										}
+									})
+
+							})
+						})
+					})
+			})
+	}
+	// Obtiene los ngramas de un proyecto (sumando los de todas las patentes asociadas al proyecto)
+	// y tambien obtiene los stopwords. 
+	function getNgrams(id_proyecto, cb) {
+		client.query('SELECT ngram, SUM(ngram_count) AS ngram_count, count(epodoc) as patentes ' +
+			'FROM ngrams WHERE (epodoc IN (SELECT epodoc FROM patentes_proyectos WHERE id_proyecto = ?)) ' +
+			'AND (ngram not in (select word from stop_words where id_proyecto=?)) ' +
+			'AND (ngram not in (select ngram from diccionario where id_proyecto=?)) ' +
+			'GROUP BY ngram ORDER BY ngram_count DESC LIMIT 1000',
+			[id_proyecto, id_proyecto, id_proyecto], function (err, result) {
+				if (err)
+					console.log(err);
+
+			result.forEach(function(item) {
+				analisis.ngramas.push({ngrama: item.ngram, cuenta: item.ngram_count, patentes: item.patentes});
+
+			    if(result.length == analisis.ngramas.length) {
+			    	client.query('SELECT word FROM stop_words WHERE id_proyecto=?', [id_proyecto],
+			    		function (err, result) {
+			    			if (result.length == 0) {
+			    				return cb();
+			    			}
+			    			result.forEach(function(item) {
+			    				analisis.stopwords.push({word: item.word});
+
+			    				if (result.length == analisis.stopwords.length) {
+			    					// ya que se proceso todo (ngramas y stopwords), llamar al callback
+			    					console.log("Stopwords encontrados. Buscando diccionario");
+/*
+	TODO: Partir este proceso en dos. Obtener los ngramas y en otro query obtener el número de patentes y su cuenta.
+	esto va a permitir mostrar los ngramas añadidos que no están en ninguna patente
+*/
+			    					client.query(
+			'SELECT ngram, SUM(ngram_count) AS ngram_count, count(epodoc) as patentes ' +
+			'FROM ngrams WHERE (epodoc IN (SELECT epodoc FROM patentes_proyectos WHERE id_proyecto = ?)) ' +
+			'AND (ngram not in (select word from stop_words where id_proyecto=?)) ' +
+			'AND (ngram in (select ngram from diccionario where id_proyecto=?)) ' +
+			'GROUP BY ngram ORDER BY ngram_count DESC LIMIT 1000',
+			    						[id_proyecto,id_proyecto,id_proyecto], function (err, res) {
+			    							if (res.length == 0) {
+			    								return 	cb();
+			    							}
+
+			    							res.forEach(function(item) {
+			    								analisis.diccionario.push({ngrama: item.ngram,
+			    									cuenta: item.ngram_count, patentes: item.patentes});
+
+			    								if (res.length == analisis.diccionario.length) {
+			    									cb();
+			    								}
+			    							});
+			    						});
+			    				}
+			    			});
+			    	});
+			    }
+			});	
+		});
+	}
+
+	function showAnalisis() {
+		res.render(ruta, {layout: 'tablero', menu: 'diccionario', analisis: analisis}, function(err, html) {
+			// revisar si una seccion existe dentro del folder tablero
+			if (err) {
+				if (err.message.indexOf('Failed to lookup view') !== -1) {
+					// si la view no existe es porque el recurso no existe, un return next()
+					// enventualmente llegará al 404 Not Found.
+					return next();
+				}
+				throw err;
+			}
+
+			// Si la view sí existe entonces enviarla al cliente;
+			res.send(html);
+		});
+	}
+};
+
+
+
+
 //
 // Se llama cuando el usuario desea analizar las patentes de un proyecto
 //  la llamada viene de un AJAX en la seccion de Proyectos

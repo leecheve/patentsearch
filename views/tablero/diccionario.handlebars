@@ -1,4 +1,4 @@
-<h2 class="page-header">Resultado del análisis</h2>
+<h2 class="page-header">Proyecto: {{analisis.nombre_proyecto}}</h2>
 
   {{#if flash}}
   <div class="container">
@@ -9,110 +9,52 @@
   </div>
   {{/if}}
 
+  <div class="container">
       {{#if analisis.id_proyecto}}
-        <h3 class="sub-header">Proyecto: {{analisis.nombre_proyecto}}</h3>
+        <h3 class="sub-header">Matriz de patentes</h3>
         <br>
 
-        {{!-- nube de palabras --}}
-
-        <div class="row featurette">
-          <div class="col-md-6">
-            <h2 class="featurette-heading">Nube de palabras. <span class="text-muted">Todas las patentes.</span></h2>
-            <p class="lead">La nube de palabras es generada utulizando todos los ngramas encontrados en el conjunto de patentes pertenecientes al proyecto.
-            </p>
-            <p class="lead">
-            El tamaño de cada palabra representa su frecuencia en el cuerpo de patentes.
-            </p>
-          </div>
-          <div class="col-md-6">
-            <img class="featurette-image img-responsive" src="/{{analisis.id_proyecto}}_wordcloud_1.png">
-          </div>
-        </div>
-
+        {{!-- Matriz del proyecto! --}}
+          <div class="col-lg-12">
+            {{#if analisis.patentes}}
+              <table class="table-bordered">
+                <thead>
+                  <tr>
+                    <th></th>
+                  {{#each analisis.patentes}}
+                    <th><small>{{epodoc}}</small></th>
+                  {{/each}}
+                  </tr>
+                </thead>
+                <tbody>
+                {{#each analisis.matriz}}
+                  <tr>
+                    <th>
+                      {{ngrama}}
+                    </th>
+                    {{#each patentes}}
+                      <td class="text-center"><small>{{this}}</small></td>
+                    {{/each}}
+                  </tr>
+                {{/each}}
+                </tbody>
+              </table>
+            {{/if}}
+          </div><!-- /.col-lg-12 -->
+        
+        &nbsp;
         <hr class="featurette-divider">
-
-        <div class="row featurette">
-          <div class="col-md-6">
-            <img class="featurette-image img-responsive" src="/{{analisis.id_proyecto}}_wordcloud_2.png">
-          </div>
-          <div class="col-md-6">
-            <h2 class="featurette-heading">Nube de palabras. <span class="text-muted">Todas las patentes.</span></h2>
-            <p class="lead">Para calcular esta nube de palabras se le asignó un peso a cada ngrama considerando el número de patenes y la longitud del mismo.</p>
-            <p class="lead">
-            <pre>Peso = log2(<var>x</var>) + (<var>p</var> * <var>n</var>)<p><br>x = frecuencia de la palabra<br>p = número de patentes en las que aparece<br>n = tamaño del n-grama</p></pre>
-            </p>
-          </div>
-        </div>
-
-        <hr class="featurette-divider">
-
-
         {{!-- Ngramas y stop words --}}
         <div class="row">
           <div class="col-lg-4">
-              <h3 class="featurette-heading">Tabla de Ngramas.</h3>
-          </div>
-          <div class="col-lg-4">
-              <h3 class="featurette-heading">Tabla de stopwords</h3>
-          </div>
-          <div class="col-lg-4">
               <h3 class="featurette-heading">Diccionario del proyecto</h3>
           </div>
+          <div class="col-lg-4">
+              <h3 class="featurette-heading">Agregar al diccionario del proyecto</h3>
+          </div>
+        </div>
 
         <div class="row">
-          <div class="col-lg-4">
-              <div class="btn-toolbar" role="toolbar">
-                  <button type="button" class="btn btn-danger btn-sm" value="addStopWord">Crear stop word</button>
-                  <button type="button" class="btn btn-primary btn-sm" value="addDict">Añadir al diccionario</button>
-              </div>
-            <table class="table table-condensed">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Cuenta</th>
-                  <th>Ngrama</th>
-                  <th>Patentes</th>
-                </tr>
-              </thead>
-              <tbody>
-              {{#each analisis.ngramas}}
-                <tr>
-                  <td class="text-center">
-                    <input type="checkbox" name="checkbox-ngrama" id="{{ngrama}}" value="{{ngrama}}"></input>
-                  </td>
-                  <th scope="row">{{cuenta}}</th>
-                  <td>{{ngrama}}</td>
-                  <td>{{patentes}}</td>
-                </tr>
-              {{/each}}
-              </tbody>
-            </table>
-          </div><!-- /.col-lg-4 -->
-
-          <div class="col-lg-4">
-              <div class="btn-toolbar" role="toolbar">
-                  <button type="button" class="btn btn-danger btn-sm" value="delStopWord">Remover stop word</button>
-              </div>
-            <table class="table table-condensed">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>stop word</th>
-                </tr>
-              </thead>
-              <tbody>
-              {{#each analisis.stopwords}}
-                <tr>
-                  <td class="text-center">
-                    <input type="checkbox" name="checkbox-stopword" id="{{word}}" value="{{word}}"></input>
-                  </td>
-                  <td>{{word}}</th>
-                </tr>
-              {{/each}}
-              </tbody>
-            </table>
-          </div><!-- /.col-lg-4 -->
-
           <div class="col-lg-4">
               <div class="btn-toolbar" role="toolbar">
                   <button type="button" class="btn btn-danger btn-sm" value="delDict">Remover del diccionario</button>
@@ -141,6 +83,17 @@
             </table>
           </div><!-- /.col-lg-4 -->
 
+          <div class="col-lg-4">
+
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="" id="customDict">
+              <span class="input-group-btn">
+                <button class="btn btn-primary btn-sm" type="button" value="addCustomDict">Añadir</button>
+              </span>
+            </div><!-- /input-group -->
+
+          </div><!-- /.col-lg-4 -->
+
         </div><!-- /.row -->
 
         <!-- Featurette -->
@@ -149,16 +102,16 @@
 
       {{/if}}
 
-      <h3 class="sub-header">Mostrar análisis:</h2>
+      <h3 class="sub-header">Mostrar matriz del proyecto:</h2>
       <div class="well" style="max-width: 400px; margin: 0 auto 10px;">
       {{#each usuario.proyectos}}
         <p>
-          <a href="analisis?proyecto={{id}}" role="button" class="btn btn-primary btn-default btn-block">{{nombre}}</a>
+          <a href="diccionario?proyecto={{id}}" role="button" class="btn btn-primary btn-default btn-block">{{nombre}}</a>
           <small>({{fechaCreacion}})</small>
         </p>
       {{/each}}
       </div>
-
+  </div>
 
 <script>window.jQuery || document.write('<script src="/vendor/jquery-1.11.0.min.js"><\/script>')</script>
 <script>
