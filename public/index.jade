@@ -1,0 +1,15 @@
+extends ./layout.jade
+
+block title
+	title My App - Index
+
+block content
+	div.container
+		div.jumbotron
+			h1 Hello #{message}!
+
+		form(method="POST" action="/name")
+			div.form-group
+				label(for="name") Name
+				input.form-control(type="text" id="name" name="name" placeholder="Your Name Here...")
+			button(class="btn btn-default" type="submit") Submit
